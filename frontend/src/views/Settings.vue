@@ -1,5 +1,4 @@
 <template>
-    <Navbar />
     <div class="text-gray-800 dark:text-gray-200">
         <!-- 页面头部 -->
         <div class="settings-header container mx-auto px-4 py-8 mb-6">
@@ -113,7 +112,6 @@
 </template>
 
 <script setup>
-import Navbar from "@/components/Navbar.vue";
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import message from '@/utils/message.js'
