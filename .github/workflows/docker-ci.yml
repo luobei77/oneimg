@@ -11,7 +11,7 @@ on:
 env:
   # 🚨 IMPORTANT: 请修改为您的 Docker Hub 仓库路径！
   # 格式为：[用户名]/[仓库名]，例如 luobei/my-app
-  DOCKER_REPOSITORY: luobei/oneimg
+  DOCKER_REPOSITORY: abard/oneimg
 
 jobs:
   build-and-push:
