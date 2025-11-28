@@ -1,0 +1,56 @@
+name: Docker CI/CD (Build and Push)
+
+on:
+  # 当代码推送到 main 分支时触发此工作流程
+  push:
+    branches:
+      - main
+  # 也可以手动从 GitHub Actions 界面触发
+  workflow_dispatch:
+
+env:
+  # 🚨 IMPORTANT: 请修改为您的 Docker Hub 仓库路径！
+  # 格式为：[用户名]/[仓库名]，例如 luobei/my-app
+  DOCKER_REPOSITORY: luobei/oneimg
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: ⬇️ Checkout code
+        # 获取您的仓库代码
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Set up Docker Buildx
+        # 设置 Buildx，支持高效构建和缓存
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔑 Login to Docker Hub
+        # 使用 GitHub Secrets 登录 Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🏷️ Set up tags and metadata
+        # 自动生成标签，使用 Git SHA 作为唯一标识，并对 main 分支使用 latest 标签
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REPOSITORY }}
+          tags: |
+            type=sha,format=long # 标签为 Git 提交的 SHA 值
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }} # main 分支额外打 latest 标签
+
+      - name: 🏗️ Build and Push Docker image
+        # 构建并推送到 Docker Hub
+        uses: docker/build-push-action@v6
+        with:
+          context: . # Dockerfile 所在的目录，. 表示仓库根目录
+          file: ./Dockerfile # Dockerfile 路径
+          push: true # 必需，表示推送镜像到 Docker Hub
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha # 启用 GitHub Actions 缓存（可选，加速后续构建）
+          cache-to: type=gha,mode=max
